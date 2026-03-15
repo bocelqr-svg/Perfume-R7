@@ -92,9 +92,9 @@
                 <span class="text-[8px] uppercase tracking-[0.6em] text-gray-500 mt-1">Scent Boutique & Gallery</span>
             </div>
             
-            <button onclick="openAccessModal('add')" class="text-emerald-500 border border-emerald-500/30 px-4 py-2 rounded-full text-[10px] uppercase tracking-widest hover:bg-emerald-500 hover:text-black transition-all">
+            <a href="admin.html" class="text-emerald-500 border border-emerald-500/30 px-4 py-2 rounded-full text-[10px] uppercase tracking-widest hover:bg-emerald-500 hover:text-black transition-all">
                 Panel Admin
-            </button>
+            </a>
         </div>
     </nav>
 
@@ -106,22 +106,9 @@
 
         <div id="empty-state" class="py-32 flex flex-col items-center justify-center border border-emerald-500/10 rounded-[40px] bg-emerald-500/[0.02]">
             <p class="text-lg font-light text-gray-400">Sin fragancias disponibles actualmente.</p>
-            <p class="text-[10px] uppercase tracking-widest text-emerald-500/50 mt-4">Acceda al panel para cargar inventario</p>
+            <p class="text-[10px] uppercase tracking-widest text-emerald-500/50 mt-4">Cargando inventario...</p>
         </div>
     </main>
-
-    <!-- Modal de Contraseña -->
-    <div id="password-modal" class="fixed inset-0 z-[100] flex items-center justify-center hidden p-4 bg-black/95 backdrop-blur-xl">
-        <div class="bg-[#0f0f0f] w-full max-w-sm rounded-3xl p-8 border border-emerald-500/30 text-center shadow-2xl">
-            <h3 class="text-xl font-bold neon-text uppercase tracking-widest mb-2">Seguridad R7</h3>
-            <p class="text-gray-500 text-[10px] uppercase tracking-widest mb-6">Confirmación de Identidad</p>
-            <input type="password" id="admin-pass" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-emerald-500 text-white mb-6" placeholder="******">
-            <div class="flex gap-3">
-                <button onclick="closeModal('password-modal')" class="flex-1 py-3 text-gray-500 uppercase text-[10px] font-bold tracking-widest">Cerrar</button>
-                <button onclick="verifyAccess()" class="flex-1 btn-emerald py-3 rounded-xl uppercase text-[10px] tracking-widest">Entrar</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Modal de Factura -->
     <div id="invoice-modal" class="fixed inset-0 z-[110] flex items-center justify-center hidden p-4 bg-black/90 backdrop-blur-sm">
@@ -157,119 +144,50 @@
         </div>
     </div>
 
-    <!-- Modal Registro (Admin) -->
-    <div id="product-modal" class="fixed inset-0 z-[120] flex items-center justify-center hidden p-4 bg-black/90">
-        <div class="bg-[#0f0f0f] w-full max-w-lg rounded-[40px] p-8 border border-emerald-500/20 shadow-2xl relative">
-            <h3 class="text-2xl font-bold tracking-tight neon-text uppercase mb-8">Nueva Fragancia</h3>
-            <form id="perfume-form" onsubmit="saveProduct(event)" class="space-y-6">
-                <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="upload-zone h-48 rounded-3xl flex flex-col items-center justify-center cursor-pointer overflow-hidden relative border border-white/5">
-                    <div id="preview-text" class="text-center text-gray-500">
-                        <svg class="h-8 w-8 mx-auto mb-2 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4" />
-                        </svg>
-                        <p class="text-[10px] uppercase tracking-widest">Subir Imagen</p>
-                    </div>
-                    <img id="img-preview" src="" class="absolute inset-0 w-full h-full object-contain hidden p-6">
-                </div>
-                <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFile(this)">
-                
-                <input required id="p-name" type="text" placeholder="NOMBRE DEL PERFUME" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-emerald-500 text-white placeholder:text-gray-700">
-                <input required id="p-price" type="number" step="0.01" placeholder="PRECIO ($)" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:border-emerald-500 text-white placeholder:text-gray-700">
-                
-                <div class="flex gap-4">
-                    <button type="button" onclick="closeModal('product-modal')" class="flex-1 py-4 text-gray-500 text-xs font-bold tracking-widest uppercase">Cancelar</button>
-                    <button type="submit" class="flex-1 btn-emerald py-4 rounded-2xl text-xs uppercase tracking-widest">Publicar</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Supabase SDK, jsPDF and QRCode -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 
     <!-- Script -->
     <script>
+        // CONFIGURACIÓN SUPABASE
+        const SUPABASE_URL = "https://esmvrmngmrcdofdckzik.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzbXZybW5nbXJjZG9mZGNremlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MzA0ODEsImV4cCI6MjA4OTEwNjQ4MX0.AeoL588TmcqLQpiAbQorMB-RuwG0t3odrNBaKoMB7PY";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const WHATSAPP_NUMBER = "8294379911";
-        const ADMIN_PASS = "203031";
         
         let products = [];
-        let imageData = '';
-        let currentAction = ''; // 'add' o 'delete'
-        let pendingDeleteId = null;
         let currentPurchase = null;
 
-        // Modales
-        function openAccessModal(action, id = null) {
-            currentAction = action;
-            pendingDeleteId = id;
-            document.getElementById('password-modal').classList.remove('hidden');
-            document.getElementById('admin-pass').focus();
+        // Cargar productos al iniciar
+        window.onload = fetchProducts;
+
+        async function fetchProducts() {
+            const { data, error } = await supabaseClient
+                .from('perfumes')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) console.error('Error cargando:', error);
+            else {
+                products = data;
+                render();
+            }
         }
 
         function closeModal(id) {
             document.getElementById(id).classList.add('hidden');
-            if(id === 'password-modal') document.getElementById('admin-pass').value = '';
-        }
-
-        function verifyAccess() {
-            const pass = document.getElementById('admin-pass').value;
-            if (pass === ADMIN_PASS) {
-                closeModal('password-modal');
-                if (currentAction === 'add') {
-                    document.getElementById('product-modal').classList.remove('hidden');
-                } else if (currentAction === 'delete') {
-                    executeDelete();
-                }
-            } else {
-                alert("CLAVE INCORRECTA");
-                document.getElementById('admin-pass').value = '';
-            }
-        }
-
-        // Productos
-        function handleFile(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    imageData = e.target.result;
-                    document.getElementById('img-preview').src = e.target.result;
-                    document.getElementById('img-preview').classList.remove('hidden');
-                    document.getElementById('preview-text').classList.add('hidden');
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function saveProduct(e) {
-            e.preventDefault();
-            if(!imageData) return alert("Sube una imagen");
-            
-            const product = {
-                id: 'R7-' + Math.floor(Math.random() * 10000),
-                name: document.getElementById('p-name').value.toUpperCase(),
-                price: parseFloat(document.getElementById('p-price').value).toFixed(2),
-                image: imageData
-            };
-
-            products.push(product);
-            render();
-            closeModal('product-modal');
-            resetForm();
-        }
-
-        function resetForm() {
-            document.getElementById('perfume-form').reset();
-            document.getElementById('img-preview').classList.add('hidden');
-            document.getElementById('preview-text').classList.remove('hidden');
-            imageData = '';
-        }
-
-        function executeDelete() {
-            products = products.filter(p => p.id !== pendingDeleteId);
-            render();
-            pendingDeleteId = null;
         }
 
         // Compras y Facturación
         function checkout(id) {
             const product = products.find(p => p.id === id);
+            if (product.stock <= 0) {
+                alert("LO SENTIMOS, ESTA FRAGANCIA ESTÁ AGOTADA");
+                return;
+            }
             currentPurchase = product;
             
             const date = new Date().toLocaleDateString('es-DO');
@@ -283,21 +201,133 @@
             document.getElementById('invoice-modal').classList.remove('hidden');
         }
 
-        function sendToWhatsApp() {
+        async function generatePDF(invId, date, productName, price) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Estilos de fondo
+            doc.setFillColor(10, 10, 10);
+            doc.rect(0, 0, 210, 297, 'F');
+            
+            doc.setTextColor(16, 185, 129); // Esmeralda
+            doc.setFontSize(26);
+            doc.text("R7 AROMA", 20, 30);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            doc.text("SCENT BOUTIQUE & GALLERY", 20, 38);
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(11);
+            doc.text(`ID FACTURA: ${invId}`, 140, 30);
+            doc.text(`FECHA: ${date}`, 140, 38);
+            
+            doc.setDrawColor(16, 185, 129);
+            doc.setLineWidth(0.5);
+            doc.line(20, 50, 190, 50);
+            
+            doc.setFontSize(14);
+            doc.text("DETALLES DE LA COMPRA", 20, 70);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(150, 150, 150);
+            doc.text("DESCRIPCIÓN DEL PRODUCTO", 20, 85);
+            doc.text("TOTAL PAGADO", 155, 85);
+            
+            doc.setFontSize(16);
+            doc.setTextColor(255, 255, 255);
+            doc.text(productName, 20, 100);
+            doc.text(`$${price}`, 155, 100);
+            
+            doc.setDrawColor(40, 40, 40);
+            doc.line(20, 115, 190, 115);
+            
+            try {
+                const qrData = `FACTURA: ${invId} | PRODUCTO: ${productName} | TOTAL: $${price} | FECHA: ${date}`;
+                const qrDataUrl = await QRCode.toDataURL(qrData, { 
+                    margin: 1, 
+                    width: 150,
+                    color: { dark: '#10b981', light: '#ffffff' }
+                });
+                doc.addImage(qrDataUrl, 'PNG', 145, 125, 45, 45);
+                doc.setFontSize(8);
+                doc.setTextColor(100, 100, 100);
+                doc.text("VALIDACIÓN QR OFICIAL", 150, 175);
+            } catch (err) {
+                console.error("Error QR:", err);
+            }
+            
+            doc.setFontSize(12);
+            doc.setTextColor(16, 185, 129);
+            doc.text("Gracias por elegir la exclusividad de R7 AROMA", 20, 220);
+            
+            // Retornamos el PDF como Blob en lugar de descargarlo
+            return doc.output('blob');
+        }
+
+        async function sendToWhatsApp() {
             const date = document.getElementById('inv-date').innerText;
             const invId = document.getElementById('inv-id').innerText;
+            const productName = document.getElementById('inv-name').innerText;
+            const price = document.getElementById('inv-price').innerText.replace('$', '');
             
-            const message = `*FACTURA R7 AROMA*%0A` +
-                            `--------------------------%0A` +
-                            `*ID:* ${invId}%0A` +
-                            `*Fecha:* ${date}%0A` +
-                            `*Producto:* ${currentPurchase.name}%0A` +
-                            `*Total:* $${currentPurchase.price}%0A` +
-                            `--------------------------%0A` +
-                            `Hola, quiero confirmar el pedido de este perfume.`;
-            
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
-            closeModal('invoice-modal');
+            // Cambiamos el texto del botón para dar feedback
+            const btn = document.querySelector('#invoice-modal button');
+            const originalText = btn.innerText;
+            btn.innerText = "PROCESANDO...";
+            btn.disabled = true;
+
+            try {
+                // 1. Generar el PDF como Blob (sin descargar)
+                const pdfBlob = await generatePDF(invId, date, productName, price);
+                const fileName = `factura_${invId.replace('#', '')}_${Date.now()}.pdf`;
+
+                // 2. Subir a Supabase Storage (Bucket: 'facturas')
+                const { data, error: uploadError } = await supabaseClient
+                    .storage
+                    .from('facturas')
+                    .upload(fileName, pdfBlob, { contentType: 'application/pdf' });
+
+                if (uploadError) throw uploadError;
+
+                // 3. Obtener URL pública
+                const { data: { publicUrl } } = supabaseClient
+                    .storage
+                    .from('facturas')
+                    .getPublicUrl(fileName);
+
+                // 4. Actualizar stock
+                if (currentPurchase && currentPurchase.stock > 0) {
+                    await supabaseClient
+                        .from('perfumes')
+                        .update({ stock: currentPurchase.stock - 1 })
+                        .eq('id', currentPurchase.id);
+                    fetchProducts();
+                }
+
+                // 5. Preparar mensaje con el enlace al PDF
+                const message = `*🧾 FACTURA OFICIAL R7 AROMA*%0A` +
+                                `------------------------------------------%0A` +
+                                `*ID:* ${invId}%0A` +
+                                `*Fecha:* ${date}%0A` +
+                                `------------------------------------------%0A` +
+                                `*Producto:* ${productName}%0A` +
+                                `*Total:* $${price}%0A` +
+                                `------------------------------------------%0A` +
+                                `📄 *VER FACTURA PDF:* ${publicUrl}%0A` +
+                                `------------------------------------------%0A` +
+                                `✨ *Nueva compra realizada.*`;
+                
+                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+                closeModal('invoice-modal');
+
+            } catch (err) {
+                console.error("Error:", err);
+                alert("Hubo un error al procesar la factura. Asegúrate de que el bucket 'facturas' existe en Supabase y es público.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
 
         function render() {
@@ -314,21 +344,21 @@
             grid.classList.remove('hidden');
 
             grid.innerHTML = products.map(p => `
-                <div class="perfume-card neon-border group animate-in fade-in duration-700">
-                    <div class="h-80 overflow-hidden flex items-center justify-center p-10 bg-white/5">
+                <div class="perfume-card neon-border group animate-in fade-in duration-700 ${p.stock <= 0 ? 'opacity-50 grayscale' : ''}">
+                    <div class="h-80 overflow-hidden flex items-center justify-center p-10 bg-white/5 relative">
                         <img src="${p.image}" alt="${p.name}" class="max-h-full max-w-full object-contain transition-transform duration-1000 group-hover:scale-110">
+                        ${p.stock <= 0 ? '<div class="absolute inset-0 flex items-center justify-center bg-black/60"><span class="text-red-500 font-bold tracking-[0.3em] uppercase text-xs">Agotado</span></div>' : ''}
                     </div>
                     
-                    <button onclick="openAccessModal('delete', '${p.id}')" class="absolute top-4 right-4 bg-black/50 text-red-500/50 hover:text-red-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all border border-white/5">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-
                     <div class="p-8">
-                        <h3 class="text-xl font-bold tracking-tight text-white mb-2">${p.name}</h3>
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold tracking-tight text-white uppercase">${p.name}</h3>
+                            <span class="text-[10px] text-emerald-500/50 font-mono">STOCK: ${p.stock}</span>
+                        </div>
                         <p class="text-2xl font-light text-emerald-500 mb-8">$${p.price}</p>
                         
-                        <button onclick="checkout('${p.id}')" class="w-full btn-emerald py-4 rounded-2xl uppercase tracking-[0.2em] text-[10px] font-bold">
-                            COMPRAR
+                        <button onclick="checkout('${p.id}')" ${p.stock <= 0 ? 'disabled' : ''} class="w-full ${p.stock <= 0 ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'btn-emerald'} py-4 rounded-2xl uppercase tracking-[0.2em] text-[10px] font-bold">
+                            ${p.stock <= 0 ? 'AGOTADO' : 'COMPRAR'}
                         </button>
                     </div>
                 </div>
@@ -337,3 +367,4 @@
     </script>
 </body>
 </html>
+
